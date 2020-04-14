@@ -13,7 +13,7 @@ import imgkit
 
 # Image manipulation packages. PIL stands for Pillow. you need to `pip install Pillow`
 import PIL
-from PIL import Image
+from PIL import Image, ImageOps
 
 
 
@@ -29,7 +29,7 @@ th_styles = {'selector': 'th',
                      ('border-width','1px'),
                      ('font-family', 'verdana'),
                      ('white-space', 'nowrap'),
-                     ('width', '75%'),
+                       ('width', '75%'),
                      ("text-align", "left")]}
 
 # Css for data rows
@@ -46,7 +46,7 @@ td_styles = {'selector': 'td',
 # Css for table title
 cap_style = {'selector':'caption',
              'props':[('font-family', 'verdana'),
-#                       ('white-space', 'nowrap'),
+                      ('white-space', 'nowrap'),
                       ("font-size", "large")]}
 
 options = {'quiet': ''}
@@ -81,22 +81,29 @@ def value_counts_table(vc_obj, caption_txt, file_name):
     test_df.columns = ["count"]
 
     # Formats the css and html to make it look nice
-    improved =test_df.style.set_table_attributes('style="border-collapse:collapse"')\
+    improved = test_df.style.format('{:,.0f}').set_table_attributes('style="border-collapse:collapse"')\
                      .set_table_styles([tb_styles, th_styles,td_styles,cap_style]).set_caption(caption_txt)
     # Renders the html
     html = improved.render()
 
-    # Renders the html
+    # Renders the html & saves as image
     path = './images/'+file_name+'.png'
     imgkit.from_string(html, path, options=options)
 
     # Crops the image
+    
+    ## PIL opens image
     im = Image.open(path)
-    boxed = im.getbbox() 
-    print(boxed)
-    print(im.size)
-    cropped_image = im.crop(boxed)
+    
+    ## Inverts the colors of the image, because getbbox looks for black boundaries, not white ones
+    inverted = ImageOps.invert(im.convert('RGB'))
+    
+    ## Get the automated boundaries box from the inverted file
+    boxed = inverted.getbbox()
+    
+    ## Slaps those crop boundaries on the orginal image
+    cropped_image=im.crop(boxed)
 
-    # Saves the updated image file
+    # BAM, saves the cropped image file over the orignal
     cropped_image.save(path)
     pass
