@@ -8,58 +8,95 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 
-# System and Image manipulation packages
+# Is a python wrapper for wkhtmltoimage. would need to install wkhtmltoimage to have it work locally 
+import imgkit
+
+# Image manipulation packages. PIL stands for Pillow. you need to `pip install Pillow`
 import PIL
 from PIL import Image
 
 
-def another(vc_obj, column_text, caption_txt, file_name):
 
-    tb_styles = {'selector': 'table',
-            'props':[( 'width', '100%')]}
+# Css for table style
+tb_styles = {'selector': 'table',
+            'props':[('margin','0')]}
 
-    th_styles={'selector': 'th',
-               'props': [('border', "1"),
-                         ("border-color", "black"),
-                         ('border-style','solid'),
-                         ('border-width','1px'),
-                         ('font-family', 'verdana'),
-                         ('white-space', 'nowrap'),
-                         ('width', '75%'),
-                         ("text-align", "left")]
-              }
+# Css for table headers
+th_styles = {'selector': 'th', 
+             'props': [('border', "1"),
+                     ("border-color", "black"),
+                     ('border-style','solid'),
+                     ('border-width','1px'),
+                     ('font-family', 'verdana'),
+                     ('white-space', 'nowrap'),
+                     ('width', '75%'),
+                     ("text-align", "left")]}
+
+# Css for data rows
+td_styles = {'selector': 'td',
+             'props': [('font-family', 'verdana'),
+                       ('border', "1"),
+                       ("border-color", "black"),
+                       ('border-style','solid'),
+                       ('border-width','1px'),
+                       ('white-space', 'nowrap'),
+                       ('padding-right',"10px"),
+                       ('padding',"10px")]}
+
+# Css for table title
+cap_style = {'selector':'caption',
+             'props':[('font-family', 'verdana'),
+#                       ('white-space', 'nowrap'),
+                      ("font-size", "large")]}
+
+options = {'quiet': ''}
 
 
 
-    td_styles = {'selector': 'td',
-                 'props': [('font-family', 'verdana'),
-                           ('border', "1"),
-                           ("border-color", "black"),
-                           ('border-style','solid'),
-                           ('border-width','1px'),
-                           ('white-space', 'nowrap'),
-                           ('padding-right',"10px"),
-                          ('padding',"10px")]
-                }
+def value_counts_table(vc_obj, caption_txt, file_name):
+    """This function:
+        - takes a pd.Series output from value_counts() and converts it to a pd.DataFrame
+        - formats the css and html to make it look nice
+        - renders the html
+        - converts the html to a PNG file
+        - crops the image
+        - saves the updated image file
+        
+        
+        Parameters
+        ----------
+        vc_obj : series
+            Output from a summary table created by using value_counts()
+        caption_txt : string
+            Title of table
+        file_name : string
+            what you want the file to be named
+        
+        Returns
+        -------
+        file_name.png : saves image of converted value_counts output"""    
+        
+    # Takes a pd.Series output from value_counts() and converts it to a pd.DataFrame        
+    test_df =vc_obj.to_frame()        
+    test_df.columns = ["count"]
 
-    cap_style = {'selector':'caption',
-                'props':[('font-family', 'verdana'),
-                         ('white-space', 'nowrap'),
-                        ("font-size", "large")]}
-
-
-    type(file_name)
-    test_df =vc_obj.to_frame()
-    test_df.columns = [column_text]
-    
+    # Formats the css and html to make it look nice
     improved =test_df.style.set_table_attributes('style="border-collapse:collapse"')\
                      .set_table_styles([tb_styles, th_styles,td_styles,cap_style]).set_caption(caption_txt)
+    # Renders the html
     html = improved.render()
-    path = './images/'+file_name+'.png'
-    print(path)
-    imgkit.from_string(html, path)
 
-    with Image(filename=path) as img:
-        img.trim(Color("WHITE"))
-        img.save(filename=path)
-    
+    # Renders the html
+    path = './images/'+file_name+'.png'
+    imgkit.from_string(html, path, options=options)
+
+    # Crops the image
+    im = Image.open(path)
+    boxed = im.getbbox() 
+    print(boxed)
+    print(im.size)
+    cropped_image = im.crop(boxed)
+
+    # Saves the updated image file
+    cropped_image.save(path)
+    pass
