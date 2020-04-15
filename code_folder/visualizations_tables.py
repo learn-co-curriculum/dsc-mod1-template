@@ -129,7 +129,7 @@ def df_table_percents(df_obj, caption_txt, file_name):
         Returns
         -------
         file_name.png : saves image of converted value_counts output"""
-    test_df = df_onj.copy()
+    test_df = df_obj.copy()
         
 
 
