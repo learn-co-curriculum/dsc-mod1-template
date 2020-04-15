@@ -1,20 +1,24 @@
-
+# visualization packages
 import matplotlib.pyplot as plt
 from matplotlib.axes._axes import _log as matplotlib_axes_logger
 from matplotlib.ticker import FuncFormatter
 import seaborn as sns
+matplotlib_axes_logger.setLevel('ERROR')
 
 # Standard data manipulation packages
 import pandas as pd
 import numpy as np
 
 # Is a python wrapper for wkhtmltoimage. would need to install wkhtmltoimage to have it work locally 
+# Note - I've only seen this work on Macs, there is some trouble getting it to work with PCs
 import imgkit
 
 # Image manipulation packages. PIL stands for Pillow. you need to `pip install Pillow`
 import PIL
 from PIL import Image, ImageOps
 
+
+""" The css works with the pandas.dataframe.style object to data summaries be formatted nicely"""
 
 
 # Css for table style
@@ -107,3 +111,22 @@ def value_counts_table(vc_obj, caption_txt, file_name):
     # BAM, saves the cropped image file over the orignal
     cropped_image.save(path)
     pass
+
+
+
+
+""" Setting parameters for matplotlib outside of the function, since I will reuse them multiple times
+    It's also something I can quickly copy and paste from one script to another, personal preference"""
+
+# Set specific parameters for the visualizations
+large = 22; med = 16; small = 12
+params = {'axes.titlesize': large,
+          'legend.fontsize': med,
+          'figure.figsize': (16, 10),
+          'axes.labelsize': med,
+          'xtick.labelsize': med,
+          'ytick.labelsize': med,
+          'figure.titlesize': large}
+plt.rcParams.update(params)
+plt.style.use('seaborn-whitegrid')
+sns.set_style("white")
