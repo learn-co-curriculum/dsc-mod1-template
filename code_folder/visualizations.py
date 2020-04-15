@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.ticker as ticker
+import matplotlib.cm as cm
 
 import seaborn as sns
 
@@ -138,7 +139,7 @@ params = {'axes.titlesize': large,
 sns.set_style("ticks", { 'axes.spines.top': False, 'axes.spines.right': False, "xtick.major.size": med, "xtick.minor.size": 8, 'axes.titlesize': large, 'ytick.labelsize': med})
 plt.rcParams.update(params)
 
-def time_series_plot(dataset,title,xlab,ylab,file_name):
+def time_series_plot(dataset,title,xlab,ylab,file_name, y_tick_num):
         """This function:
         - takes a pd.Series output from value_counts() and converts it to a pd.DataFrame
         - formats the css and html to make it look nice
@@ -161,62 +162,163 @@ def time_series_plot(dataset,title,xlab,ylab,file_name):
 
         Returns
         -------
-        file_name.png : saves image of matplotlib output""" 
+        file_name.png : saves image of matplotlib output"""
+        
+        
     
-    # assign argument values to variables
-    file_name = file_name
-    title = title
-    xlab = xlab
-    ylab = ylab
-    data = dataset.copy()
+        # assign argument values to variables
+        file_name = file_name
+        title = title
+        xlab = xlab
+        ylab = ylab
+        data = dataset.copy()
 
-    # Create figure container
-    fig = plt.figure(figsize=(16, 10), dpi=80) 
+        # Create figure container
+        fig = plt.figure(figsize=(16, 10), dpi=80) 
 
+
+        # Creates one subplot within our figure and uses the classes fig and ax
+        fig, ax = plt.subplots(figsize=(16, 10), dpi= 80, facecolor='w', edgecolor='k')
+        
+        color=cm.rainbow(np.linspace(0,1,len(data.columns.tolist())))
+
+        # Loops through species catagory and adds them to the plot
+        for col_name, c in zip(data.columns.tolist(),color):
+            ax.plot(data.index, col_name, data=data, linewidth=4,c=c)
+
+        # Format the ticks
+
+        ## X Axis    
+        ### Specify variables I want to use
+        years = mdates.YearLocator()   # every year
+        months = mdates.MonthLocator(interval=3)  # every month
+        years_fmt = mdates.DateFormatter('%b-%Y')
+        mon_fmt = mdates.DateFormatter('%b')
+
+        ax.xaxis.set_major_locator(years)
+        ax.xaxis.set_major_formatter(years_fmt)
+        ax.xaxis.set_minor_locator(mdates.MonthLocator(interval=3))
+        ax.xaxis.set_minor_formatter(mon_fmt)
+
+        ## Y Axis format
+        ax.yaxis.set_major_locator(ticker.MultipleLocator(y_tick_num))
+        
+      
+        string_format = '{x:,.0f}'
+        
+        ax.yaxis.set_major_formatter(ticker.StrMethodFormatter(string_format))
+
+        # Sets the limits of the x-axis: round to nearest years.
+        datemin = np.datetime64(data.index.min(), 'Y')
+        datemax = np.datetime64(data.index[-1], 'Y') + np.timedelta64(1, 'Y')
+        ax.set_xlim(datemin, datemax)
+
+        # Dynamically sets a bunch of labels
+        ax.set_title(title)
+        ax.set_xlabel(xlab)
+        ax.set_ylabel(ylab)
+        ax.legend()
+
+        # Specifies I want the grid for BOTH level of tick marks
+        ax.grid(True, which="both")
+
+        # rotates and right aligns the x labels, and moves the bottom of the
+        # axes up to make room for them
+        fig.autofmt_xdate(which='both')
+
+        path = './images/'+file_name+'.png'
+        plt.savefig(path)
+        plt.close(fig)  
+        pass
     
-    # Creates one subplot within our figure and uses the classes fig and ax
-    fig, ax = plt.subplots(figsize=(16, 10), dpi= 80, facecolor='w', edgecolor='k')
+"""Same thing as above except with percent formatting"""    
+def time_series_plot_percent(dataset,title,xlab,ylab,file_name, y_tick_num):
+        """This function:
+        - takes a pd.Series output from value_counts() and converts it to a pd.DataFrame
+        - formats the css and html to make it look nice
+        - renders the html
+        - converts the html to a PNG file
+        - crops the image
+        - saves the updated image file
+        
+        
+        Parameters
+        ----------
+        dataset : DataFrame
+            Output from a summary table created by using value_counts()
+        title : string
+            Title on graph
+        xlab : string
+        ylab : string
+        file_name : string
+            what you want the image file to be named
 
-    # Loops through species catagory and adds them to the plot
-    for col_name in summed_df.columns.tolist():
-        ax.plot(summed_df.index, col_name, data=data)
-
-    # Format the ticks
+        Returns
+        -------
+        file_name.png : saves image of matplotlib output"""
+        
+        
     
-    ## X Axis    
-    ### Specify variables I want to use
-    years = mdates.YearLocator()   # every year
-    months = mdates.MonthLocator(interval=3)  # every month
-    years_fmt = mdates.DateFormatter('%b-%Y')
-    mon_fmt = mdates.DateFormatter('%b')
+        # assign argument values to variables
+        file_name = file_name
+        title = title
+        xlab = xlab
+        ylab = ylab
+        data = dataset.copy()
 
-    ax.xaxis.set_major_locator(years)
-    ax.xaxis.set_major_formatter(years_fmt)
-    ax.xaxis.set_minor_locator(mdates.MonthLocator(interval=3))
-    ax.xaxis.set_minor_formatter(mon_fmt)
+        # Create figure container
+        fig = plt.figure(figsize=(16, 10), dpi=80) 
 
-    ## Y Axis format
-    ax.yaxis.set_major_locator(ticker.MultipleLocator(100))
-    ax.yaxis.set_major_formatter(ticker.StrMethodFormatter('{x:,.0f}'))
 
-    # Sets the limits of the x-axis: round to nearest years.
-    datemin = np.datetime64(summed_df.index.min(), 'Y')
-    datemax = np.datetime64(summed_df.index[-1], 'Y') + np.timedelta64(1, 'Y')
-    ax.set_xlim(datemin, datemax)
+        # Creates one subplot within our figure and uses the classes fig and ax
+        fig, ax = plt.subplots(figsize=(16, 10), dpi= 80, facecolor='w', edgecolor='k')
+        
+        color=cm.rainbow(np.linspace(0,1,len(data.columns.tolist())))
 
-    # Dynamically sets a bunch of labels
-    ax.set_title(title)
-    ax.set_xlabel(xlab)
-    ax.set_ylabel(ylab)
-    ax.legend()
+        # Loops through species catagory and adds them to the plot
+        for col_name, c in zip(data.columns.tolist(),color):
+            ax.plot(data.index, col_name, data=data, linewidth=4,c=c)
 
-    # Specifies I want the grid for BOTH level of tick marks
-    ax.grid(True, which="both")
+        # Format the ticks
 
-    # rotates and right aligns the x labels, and moves the bottom of the
-    # axes up to make room for them
-    fig.autofmt_xdate(which='both')
+        ## X Axis    
+        ### Specify variables I want to use
+        years = mdates.YearLocator()   # every year
+        months = mdates.MonthLocator(interval=3)  # every month
+        years_fmt = mdates.DateFormatter('%b-%Y')
+        mon_fmt = mdates.DateFormatter('%b')
 
-    path = './images/'+file_name+'.png'
-    plt.savefig(path)
-    pass
+        ax.xaxis.set_major_locator(years)
+        ax.xaxis.set_major_formatter(years_fmt)
+        ax.xaxis.set_minor_locator(mdates.MonthLocator(interval=3))
+        ax.xaxis.set_minor_formatter(mon_fmt)
+
+        ## Y Axis format
+        ax.yaxis.set_major_locator(ticker.MultipleLocator(y_tick_num))
+        
+      
+        
+        ax.yaxis.set_major_formatter(ticker.PercentFormatter())
+
+        # Sets the limits of the x-axis: round to nearest years.
+        datemin = np.datetime64(data.index.min(), 'Y')
+        datemax = np.datetime64(data.index[-1], 'Y') + np.timedelta64(1, 'Y')
+        ax.set_xlim(datemin, datemax)
+
+        # Dynamically sets a bunch of labels
+        ax.set_title(title)
+        ax.set_xlabel(xlab)
+        ax.set_ylabel(ylab)
+        ax.legend()
+
+        # Specifies I want the grid for BOTH level of tick marks
+        ax.grid(True, which="both")
+
+        # rotates and right aligns the x labels, and moves the bottom of the
+        # axes up to make room for them
+        fig.autofmt_xdate(which='both')
+
+        path = './images/'+file_name+'.png'
+        plt.savefig(path)
+        plt.close(fig)  
+        pass 
