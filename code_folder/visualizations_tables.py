@@ -46,7 +46,8 @@ td_styles = {'selector': 'td',
 cap_style = {'selector':'caption',
              'props':[('font-family', 'verdana'),
                       ('white-space', 'nowrap'),
-                      ("font-size", "large")]}
+                      ("font-size", "large"),
+                     ('padding-bottom',"10px")]}
 
 options = {'quiet': ''}
 
@@ -130,12 +131,38 @@ def df_table_percents(df_obj, caption_txt, file_name):
         -------
         file_name.png : saves image of converted value_counts output"""
     test_df = df_obj.copy()
-        
+    test_df.columns = test_df.columns.str.title()
+    
+    # Css for table title
+    cap_style2 = {'selector':'caption',
+             'props':[('font-family', 'verdana'),
+                      ("font-size", "large")]}
+    
+    
+    # Css for data rows
+    td_styles2 = {'selector': 'td',
+             'props': [('font-family', 'verdana'),
+                       ('border', "1"),
+                       ("border-color", "black"),
+                       ('border-style','solid'),
+                       ('padding',"5px"),
+                       ('border-width','1px')]}
+    
+    th_styles2 = {'selector': 'th', 
+             'props': [('border', "1"),
+                     ("border-color", "black"),
+                     ('border-style','solid'),
+                     ('border-width','1px'),
+                     ('white-space', 'nowrap'),
+                     ('font-family', 'verdana'),
+                     ("text-align", "left"),
+                       ('padding-right',"10px"),
+                       ('padding',"10px")]}
 
 
     # Formats the css and html to make it look nice
     improved = test_df.style.format("{:.2%}").set_table_attributes('style="border-collapse:collapse"')\
-                     .set_table_styles([tb_styles, th_styles,td_styles,cap_style]).set_caption(caption_txt)
+                     .set_table_styles([tb_styles, th_styles2,td_styles2,cap_style2]).set_caption(caption_txt)
     # Renders the html
     html = improved.render()
 
