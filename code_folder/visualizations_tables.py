@@ -107,5 +107,58 @@ def value_counts_table(vc_obj, caption_txt, file_name):
     cropped_image.save(path)
     pass
 
+def df_table_percents(df_obj, caption_txt, file_name):
+    """This function:
+        - takes a pd.DataFrame as input
+        - formats the css and html to make it look nice
+        - renders the html
+        - converts the html to a PNG file
+        - crops the image
+        - saves the updated image file
+        
+        
+        Parameters
+        ----------
+        df_obj : dataframe
+           input dataframe
+        caption_txt : string
+            Title of table
+        file_name : string
+            what you want the file to be named
+        
+        Returns
+        -------
+        file_name.png : saves image of converted value_counts output"""
+    test_df = df_onj.copy()
+        
+
+
+    # Formats the css and html to make it look nice
+    improved = test_df.style.format("{:.2%}").set_table_attributes('style="border-collapse:collapse"')\
+                     .set_table_styles([tb_styles, th_styles,td_styles,cap_style]).set_caption(caption_txt)
+    # Renders the html
+    html = improved.render()
+
+    # Renders the html & saves as image
+    path = './images/'+file_name+'.png'
+    imgkit.from_string(html, path, options=options)
+
+    # Crops the image
+    
+    ## PIL opens image
+    im = Image.open(path)
+    
+    ## Inverts the colors of the image, because getbbox looks for black boundaries, not white ones
+    inverted = ImageOps.invert(im.convert('RGB'))
+    
+    ## Get the automated boundaries box from the inverted file
+    boxed = inverted.getbbox()
+    
+    ## Slaps those crop boundaries on the orginal image
+    cropped_image=im.crop(boxed)
+
+    # BAM, saves the cropped image file over the orignal
+    cropped_image.save(path)
+    pass
 
 
